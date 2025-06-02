@@ -11,5 +11,5 @@ This is a beginner-friendly project built to **learn the basics of Node.js and E
 
 ---
 
-## 📂 Project Structure
+
 
