@@ -6,7 +6,7 @@ function getTodos() {
 }
 
 function addTodo(task) {
-  const todo = { id: currentId++, task };
+  const todo = { id: currentId++, task, completed: false };
   todos.push(todo);
   return todo;
 }
@@ -20,4 +20,13 @@ function deleteTodo(id) {
   return false;
 }
 
-module.exports = { getTodos, addTodo, deleteTodo };
+function toggleTodo(id) {
+  const todo = todos.find(todo => todo.id === id);
+  if (todo) {
+    todo.completed = !todo.completed;
+    return todo;
+  }
+  return null;
+}
+
+module.exports = { getTodos, addTodo, deleteTodo, toggleTodo };

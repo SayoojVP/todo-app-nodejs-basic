@@ -29,6 +29,16 @@ app.delete('/api/todos/:id', (req, res) => {
   }
 });
 
+app.patch('/api/todos/:id/toggle', (req, res) => {
+  const id = parseInt(req.params.id);
+  const updatedTodo = todos.toggleTodo(id);
+  if (updatedTodo) {
+    res.json(updatedTodo);
+  } else {
+    res.status(404).json({ error: 'Todo not found' });
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`Server running at http://localhost:${PORT}`);
 });

@@ -6,43 +6,110 @@
 </head>
 <body>
   <h1>To-Do List</h1>
-  <input id="taskInput" placeholder="New task" />
-  <button onclick="addTodo()">Add</button>
+  <form id="todoForm" onsubmit="addTodo(event)">
+    <input type="text" id="taskInput" placeholder="New task" required />
+    <button type="submit">Add</button>
+  </form>
   <ul id="todoList"></ul>
 
   <script>
     async function fetchTodos() {
-      const res = await fetch('/api/todos');
-      const todos = await res.json();
-      const list = document.getElementById('todoList');
-      list.innerHTML = '';
-      todos.forEach(todo => {
-        const li = document.createElement('li');
-        li.textContent = todo.task;
-        const delBtn = document.createElement('button');
-        delBtn.textContent = 'Delete';
-        delBtn.onclick = () => deleteTodo(todo.id);
-        li.appendChild(delBtn);
-        list.appendChild(li);
-      });
+      try {
+        const res = await fetch('/api/todos');
+        const todos = await res.json();
+        const list = document.getElementById('todoList');
+        list.innerHTML = '';
+        
+        // Sort todos: incomplete tasks first, then completed tasks
+        const sortedTodos = [...todos].sort((a, b) => {
+          if (a.completed === b.completed) return 0;
+          return a.completed ? 1 : -1;
+        });
+        
+        sortedTodos.forEach(todo => {
+          const li = document.createElement('li');
+          if (todo.completed) {
+            li.classList.add('completed');
+          }
+          
+          // Create todo content container
+          const contentDiv = document.createElement('div');
+          contentDiv.className = 'todo-content';
+          
+          // Create checkbox with explicit ID to improve clickability
+          const checkbox = document.createElement('input');
+          checkbox.type = 'checkbox';
+          checkbox.id = `todo-check-${todo.id}`;
+          checkbox.checked = todo.completed;
+          checkbox.addEventListener('change', function() {
+            toggleTodo(todo.id);
+          });
+          
+          // Create task text with label connected to checkbox
+          const taskLabel = document.createElement('label');
+          taskLabel.htmlFor = `todo-check-${todo.id}`;
+          taskLabel.className = 'todo-text';
+          taskLabel.textContent = todo.task;
+          
+          // Create delete button
+          const delBtn = document.createElement('button');
+          delBtn.textContent = 'Delete';
+          delBtn.onclick = () => deleteTodo(todo.id);
+          
+          // Append elements
+          contentDiv.appendChild(checkbox);
+          contentDiv.appendChild(taskLabel);
+          li.appendChild(contentDiv);
+          li.appendChild(delBtn);
+          list.appendChild(li);
+        });
+      } catch (error) {
+        console.error('Error fetching todos:', error);
+      }
     }
 
-    async function addTodo() {
-      const task = document.getElementById('taskInput').value;
-      await fetch('/api/todos', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ task })
-      });
-      document.getElementById('taskInput').value = '';
-      fetchTodos();
+    async function addTodo(event) {
+      event.preventDefault();
+      const taskInput = document.getElementById('taskInput');
+      const task = taskInput.value.trim();
+      if (!task) return;
+      
+      try {
+        await fetch('/api/todos', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ task })
+        });
+        taskInput.value = '';
+        fetchTodos();
+      } catch (error) {
+        console.error('Error adding todo:', error);
+      }
     }
 
     async function deleteTodo(id) {
-      await fetch(`/api/todos/${id}`, { method: 'DELETE' });
-      fetchTodos();
+      try {
+        await fetch(`/api/todos/${id}`, { method: 'DELETE' });
+        fetchTodos();
+      } catch (error) {
+        console.error('Error deleting todo:', error);
+      }
+    }
+    
+    async function toggleTodo(id) {
+      try {
+        await fetch(`/api/todos/${id}/toggle`, { 
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        fetchTodos();
+      } catch (error) {
+        console.error('Error toggling todo:', error);
+      }
     }
 
+    // Initialize the app
+    document.addEventListener('DOMContentLoaded', fetchTodos);
     fetchTodos();
   </script>
 </body>
