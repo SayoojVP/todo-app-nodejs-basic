@@ -10,5 +10,5 @@ This is a beginner-friendly project built to **learn the basics of Node.js and E
 - ☑️ Mark tasks as completed
   - Completed tasks are **struck through**
   - Completed tasks are moved to the **bottom of the list**
+- 🎨 **Dark Mode** toggle button to switch between light and dark themes
 - 🧠 Frontend in plain HTML + JavaScript (no framework)
-
